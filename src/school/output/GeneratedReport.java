@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import grade.BasicEvaluation;
 import grade.GradeEvaluation;
 import grade.MajorEvaluation;
+import grade.PassFailEvaluation;
 import school.School;
 import school.Score;
 import school.Student;
@@ -25,7 +26,7 @@ public class GeneratedReport {
 			Subject subject = subjectList.get(i);
 			makeHeader(subject);
 			makeBody(subject);
-			makeFooter(subject);
+			makeFooter();
 		}
 		return buffer.toString();
 	}
@@ -37,10 +38,10 @@ public class GeneratedReport {
 		buffer.append(Line);
 	}
 	public void makeBody(Subject subject) {
-		ArrayList<Student> studentList = school.getStudentList();
+		ArrayList<Student> studentList = subject.getStudentList();
 		for(int i=0;i<studentList.size();i++) {
 			Student student = studentList.get(i);
-			buffer.append(student.getStudentName());
+			buffer.append(student.getStudentName(	));
 			buffer.append(" | ");
 			buffer.append(student.getStudentId());
 			buffer.append(" | ");
@@ -53,26 +54,28 @@ public class GeneratedReport {
 			
 		}
 	}
-	public void makeFooter(Subject subject) {
-		
-	}
 	//제일 중요 = 어떤 정책을 통해 학점을 가져올지 
 	public void getScoreGrade(Student student, Subject subject) {
 		//학생이 가진 scoreList
 		ArrayList<Score> scoreList = student.getScoreList();
 		int majorId = student.getMajorSubject().getSubjectId();
 		//define값에 따른 점수정책
-		GradeEvaluation[] gradeEvaluation = {new BasicEvaluation(),new MajorEvaluation()};
+		GradeEvaluation[] gradeEvaluation = {new BasicEvaluation(),new MajorEvaluation(),new PassFailEvaluation()};
 		
 		for(int i=0;i<scoreList.size();i++) {
 			Score score = scoreList.get(i);
 			if(score.getSubject().getSubjectId() == subject.getSubjectId()) {//score의 과목번호와 매개변수의 과목번호가 같다면
 				String grade;
-				if(score.getSubject().getSubjectId() == majorId) { //중점과목이라면
-					grade = gradeEvaluation[Define.SAB_TYPE].getGrade(score.getPoint());
+				if(score.getSubject().getGradeType() == Define.PF_TYPE) {
+					grade = gradeEvaluation[Define.PF_TYPE].getGrade(score.getPoint());
 				}
 				else {
-					grade = gradeEvaluation[Define.AB_TYPE].getGrade(score.getPoint());
+					if(score.getSubject().getSubjectId() == majorId) { //중점과목이라면
+						grade = gradeEvaluation[Define.SAB_TYPE].getGrade(score.getPoint());
+					}
+					else {
+						grade = gradeEvaluation[Define.AB_TYPE].getGrade(score.getPoint());
+					}	
 				}
 				buffer.append(score.getPoint());
 				buffer.append(":");
